@@ -967,7 +967,7 @@ function initLive(pin, joueurs){
 <script>
 /* ===== Appli installable + notifications ===== */
 (() => {
-  const FB = null;
+  const FB = {"apiKey": "AIzaSyAqT1nHuZPvJauYxEvC0wyGTUd_9X3809k", "authDomain": "pav-futsal.firebaseapp.com", "projectId": "pav-futsal", "storageBucket": "pav-futsal.firebasestorage.app", "messagingSenderId": "830735003485", "appId": "1:830735003485:web:efa7310ef780fb486802b4", "vapidKey": "BKOBJ4q1npCqUlRh5bvApvajRicc0NvXoRsMDsFALzYgGeU0zUcORvTB9ICnSb3q6wqy933lqPaSFJtdP72zf_A"};
   const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   const $b = id => document.getElementById(id);
