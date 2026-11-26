@@ -614,7 +614,7 @@ const memeJour = (a, b) => a.getFullYear()===b.getFullYear() && a.getMonth()===b
 function liveMatch(){
   if (!LIVE || !LIVE.key) return null;
   const m = matchs.find(x => keyOf(x) === LIVE.key);
-  if (!m || m.joue) return null;
+  if (!m || (m.joue && !m.auto)) return null;
   return (memeJour(m.dt, now) || (now >= m.dt && (now - m.dt) < 12*3600e3)) ? m : null;
 }
 function liveButs(){ return (Array.isArray(LIVE.buts) ? LIVE.buts : []).filter(b => b && b.n); }
@@ -703,13 +703,26 @@ const LIVE_API = "https://script.google.com/macros/s/AKfycby2mtjx2N4PiSvAzmlZdeN
 const PHASES = ['Avant-match','1re mi-temps','Mi-temps','2e mi-temps','Terminé'];
 const apiOk = () => /^https:\/\/script\.google(usercontent)?\.com\//.test(LIVE_API);
 function renderLive(){ renderMatchday(); renderNext(); }
+// Scores enregistrés quand un match passe à « Terminé » (les résultats saisis dans le site restent prioritaires)
+let RES_SIG = '';
+function appliquerResultats(r){
+  if (!r || typeof r !== 'object') return false;
+  const sig = JSON.stringify(r); if (sig === RES_SIG) return false; RES_SIG = sig;
+  matchs.forEach(m => { if (m.auto) { m.sp = m.sa = null; m.joue = false; m.auto = false; } });
+  matchs.forEach(m => {
+    const x = r[keyOf(m)];
+    if (x && m.sp == null && m.sa == null && Number.isInteger(x.pav) && Number.isInteger(x.adv)) { m.sp = x.pav; m.sa = x.adv; m.joue = true; m.auto = true; }
+  });
+  return true;
+}
 async function chargerLive(){
   if (!apiOk()) return;
   try {
     const r = await fetch(LIVE_API + '?t=' + Date.now(), { cache: 'no-store' });
     const j = await r.json();
     const nv = (j && j.live) || {};
-    if (JSON.stringify(nv) !== JSON.stringify(LIVE)) { LIVE = nv; renderLive(); }
+    const chg = appliquerResultats(j && j.resultats);
+    if (chg || JSON.stringify(nv) !== JSON.stringify(LIVE)) { LIVE = nv; renderLive(); if (chg) { renderCal(); } }
   } catch (e) {}
 }
 async function appel(corps){
@@ -751,7 +764,7 @@ if (veutDirect()) ouvrirDirect();
 document.addEventListener('click', e => { const a = e.target.closest('a[href="#direct"]'); if (a) { e.preventDefault(); ouvrirDirect(); } }); });
 
 function initLive(pin, joueurs){
-  const choix = matchs.filter(m => (m.eq==='A'||m.eq==='B') && !m.joue && !m.st && m.comp!=='Tournoi' && (endOf(m) >= new Date(now - 12*3600e3))).sort((a,b)=>a.dt-b.dt).slice(0,4);
+  const choix = matchs.filter(m => (m.eq==='A'||m.eq==='B') && (!m.joue || m.auto) && !m.st && m.comp!=='Tournoi' && (endOf(m) >= new Date(now - 12*3600e3))).sort((a,b)=>a.dt-b.dt).slice(0,4);
   if (!choix.length) return;
   const butsInit = Array.isArray(LIVE.buts) ? LIVE.buts.map(b => ({ n: b.n || '', m: b.m || '' })) : Array.from({ length: LIVE.pav || 0 }, () => ({ n: '', m: '' }));
   let etat = { key: (liveMatch() ? LIVE.key : keyOf(choix[0])), buts: butsInit, adv: LIVE.adv||0, phase: LIVE.phase||'Avant-match' };
@@ -809,7 +822,7 @@ function initLive(pin, joueurs){
     $('#lv-pub').disabled = $('#lv-stop').disabled = true; msg('Mise à jour en cours…');
     try {
       const j = await appel({ action: 'save', pin, live });
-      if (j.ok) { LIVE = j.live || {}; renderLive(); msg('Site mis à jour à ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) + '.'); }
+      if (j.ok) { LIVE = j.live || {}; if (appliquerResultats(j.resultats)) renderCal(); renderLive(); msg('Site mis à jour à ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) + '.'); }
       else msg(j.error === 'pin' || j.error === 'locked' ? 'Le code n’est plus valable. Recharge la page.' : 'La mise à jour n’a pas fonctionné. Réessaie.');
     } catch (err) { msg('Pas de connexion. Réessaie dans un instant.'); }
     $('#lv-pub').disabled = $('#lv-stop').disabled = false;
