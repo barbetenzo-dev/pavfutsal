@@ -426,7 +426,7 @@ footer .staff:hover{color:#fff;text-decoration:underline}
 </section>
 </main>
 
-<footer><div class="wrap"><span><img src="assets/pav.png" alt="">Pont-à-Vendin Futsal</span><a href="#direct" class="staff">Espace dirigeants</a><span id="maj">Mis à jour le 25/11/2026</span></div></footer>
+<footer><div class="wrap"><span><img src="assets/pav.png" alt="">Pont-à-Vendin Futsal</span><a href="#direct" class="staff">Espace dirigeants</a><span id="maj">Mis à jour le 26/11/2026</span></div></footer>
 
 <script>
 /* ===== DONNÉES DU CLUB (à mettre à jour) ===== */
@@ -451,7 +451,7 @@ const MATCHS = [
 ["B","2026-11-20","21:00","ID1","J5","E","Redzone Futsal",6,8],
 ["A","2026-11-21","18:00","R2","J5","D","Cagny ES",7,2],
 ["U13-U14","2026-11-22","16:00","Challenge U13-U14","J5","D","Lille Vieux Futsal A",5,13],
-["B","2026-11-26","20:00","ID1","J6","D","Amiens Étouvie Futsal"],
+["B","2026-11-26","20:00","ID1","J6","D","Amiens Étouvie Futsal",3,0,"F"], // forfait adverse, PAV B déclaré vainqueur 3-0
 ["A","2026-11-28","18:30","R2","J6","E","Hautmont FC"],
 ["A","2026-12-05","18:00","Coupe Hauts-de-France","Tour 4","D","Barlin Futsal C."],
 ["B","2026-12-09","20:45","ID1","J7","E","Amiens Pigeonnier ES"],
@@ -649,7 +649,7 @@ function row(m){
   else right = m.h ? `<span class="hour num">${m.h.replace(':','h')}</span>` : `<span class="pill FG">Journée</span>`;
   const opp = m.comp==='Tournoi' ? esc(m.adv) : (m.lieu==='D' ? `PAV ${m.eq==='U13-U14'?'':m.eq} – ${esc(m.adv)}` : `${esc(m.adv)} – PAV ${m.eq==='U13-U14'?'':m.eq}`).replace(/\s+–/,' –');
   return `<div class="m${RESUMES[m.eq+'|'+m.d] || friseDe(m) ?' has-recap':''}"><div class="d"><b class="num">${d.getDate()}</b><span>${MOIS[d.getMonth()]}</span></div>
-    ${m.comp==='Tournoi' ? '<img class="crest" src="assets/logos/pav.png" alt="">' : crest(m.adv)}<div class="t"><div class="opp">${opp}</div><div class="meta"><span class="${m.eq==='A'?'team-a':''}">${LABEL[m.eq]}</span><span>${esc(compTxt(m))}</span><span>${m.lieu==='D'?'Domicile':'Extérieur'}</span></div></div>
+    ${m.comp==='Tournoi' ? '<img class="crest" src="assets/logos/pav.png" alt="">' : crest(m.adv)}<div class="t"><div class="opp">${opp}</div><div class="meta"><span class="${m.eq==='A'?'team-a':''}">${LABEL[m.eq]}</span><span>${esc(compTxt(m))}</span><span>${m.lieu==='D'?'Domicile':'Extérieur'}</span>${m.st==='F'?'<span>Victoire par forfait</span>':''}</div></div>
     <div class="r">${right}</div></div>${recapHtml(m)}`;
 }
 
