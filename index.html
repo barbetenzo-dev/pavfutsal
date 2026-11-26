@@ -145,6 +145,22 @@ section.block.alt{background:var(--surface)}
 .recap img{width:auto;max-width:100%;max-height:620px;border-radius:8px;display:block}
 .recap p{margin:0;white-space:pre-line;font-size:16px;line-height:1.5}
 .m.has-recap{border-bottom:0}
+/* Frise du match (type appli de scores) */
+.frise{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 0;max-width:560px}
+.frise .ev{display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;gap:8px;padding:7px 14px;font-size:15px}
+.frise .ev + .ev{border-top:1px solid var(--surface-2)}
+.frise .ev .h{text-align:right}
+.frise .ev .a{text-align:left}
+.frise .ev .mid{text-align:center;font:400 17px/1 var(--display);font-variant-numeric:tabular-nums}
+.frise .ev .mid small{display:block;font:700 12px/1.2 var(--cond);letter-spacing:.04em;color:var(--muted);margin-top:2px}
+.frise .ev .who{font-weight:600}
+.frise .ev .who.pav{color:var(--fg)}
+.frise .ev .who.opp{color:var(--muted);font-weight:500}
+.frise .ev .min{font:700 14px/1 var(--cond);color:var(--rouge);margin:0 6px}
+.frise .sep{display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 14px;background:var(--surface-2);font:700 14px/1 var(--cond);letter-spacing:.08em;text-transform:uppercase}
+.frise .sep b{font:400 18px/1 var(--display);letter-spacing:0}
+.frise .sep.ko{background:transparent;color:var(--muted)}
+.frise .sep.ft{background:#111;color:#fff}
 
 /* Jour de match + direct */
 .matchday{background:var(--rouge);color:#fff}
@@ -167,6 +183,7 @@ section.block.alt{background:var(--surface)}
 .lv-but input{width:100%;font:600 15px/1.2 var(--body);padding:9px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 .lv-but button{width:34px;height:34px;border-radius:50%;border:0;background:var(--surface-2);color:var(--fg);font:700 18px/1 var(--body);cursor:pointer}
 .lv-empty{font-size:14px;color:var(--muted);margin:0}
+.lv-advn{font:600 15px/1.2 var(--body);color:var(--muted);padding:9px 0}
 .lv-pick{background:var(--bg);border:2px solid var(--rouge);border-radius:8px;padding:10px}
 .lv-pick p{margin:0 0 8px;font:700 14px/1.2 var(--cond);letter-spacing:.06em;text-transform:uppercase}
 .lv-chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -563,11 +580,39 @@ function res(m){ if(!m.joue) return null; return m.sp>m.sa?'V':m.sp<m.sa?'D':'N'
 function scoreTxt(m){ return m.lieu==='D' ? `${m.sp} – ${m.sa}` : `${m.sa} – ${m.sp}`; }
 function compTxt(m){ return [COMP[m.comp]||m.comp, m.j].filter(Boolean).join(' · '); }
 
+/* Frises des matchs : buteurs du PAV (nom + minute) et minutes des buts adverses.
+   Remplies automatiquement par le score en direct, ou ici à la main pour les matchs passés. */
+const FRISES = {
+};
+function friseDe(m){ return FRISES[m.eq+'|'+m.d] || m.frise || null; }
+function friseHtml(m){
+  const f = friseDe(m); if (!f) return '';
+  const D = m.lieu === 'D', nomPav = `PAV ${m.eq}`, nomAdv = m.adv;
+  const ev = [];
+  (f.buts||[]).forEach(b => ev.push({ pav:true, n:b.n, m: parseInt(b.m,10) || null }));
+  (f.adv||[]).forEach(x => ev.push({ pav:false, n:'', m: parseInt(typeof x === 'object' ? x.m : x,10) || null }));
+  ev.sort((a,b) => (a.m ?? 99) - (b.m ?? 99));
+  let p = 0, a = 0, mt = null, html = `<div class="sep ko">Coup d’envoi${m.h ? ' · ' + m.h.replace(':','h') : ''}</div>`;
+  const sc = () => D ? `${p} – ${a}` : `${a} – ${p}`;
+  ev.forEach(e => {
+    if (mt === null && e.m !== null && e.m > 20) { mt = sc(); html += `<div class="sep">Mi-temps <b>${mt}</b></div>`; }
+    if (e.pav) p++; else a++;
+    const nom = e.pav ? (e.n === 'CSC' ? 'Contre son camp' : esc(e.n || 'But')) : esc(nomAdv);
+    const aGauche = e.pav === D, cls = `who ${e.pav?'pav':'opp'}`;
+    const min = e.m ? `${e.m}’` : '';
+    const gauche = aGauche ? `<span class="${cls}">${nom} ⚽</span>` : '', droite = aGauche ? '' : `<span class="${cls}">⚽ ${nom}</span>`;
+    html += `<div class="ev"><div class="h">${gauche}</div><div class="mid">${sc()}<small>${min}</small></div><div class="a">${droite}</div></div>`;
+  });
+  if (mt === null) html += `<div class="sep">Mi-temps <b>${sc()}</b></div>`;
+  const fin = m.joue ? scoreTxt(m) : sc();
+  html += `<div class="sep ft">Fin du match <b>${fin}</b></div>`;
+  return `<div class="frise" aria-label="Déroulé du match">${html}</div>`;
+}
 function recapHtml(m){
-  const r = RESUMES[m.eq+'|'+m.d]; if(!r) return '';
+  const r = RESUMES[m.eq+'|'+m.d], fr = friseHtml(m); if(!r && !fr) return '';
   const id = 'rc-'+m.eq+'-'+m.d;
   return `<div class="recap-wrap"><button class="recap-btn" aria-expanded="false" aria-controls="${id}">Résumé du match</button>
-    <div class="recap" id="${id}" hidden><img src="${r.photo}" alt="${esc(r.alt||'')}"><p>${esc(r.texte)}</p></div></div>`;
+    <div class="recap" id="${id}" hidden>${fr}${r ? `<img src="${r.photo}" alt="${esc(r.alt||'')}"><p>${esc(r.texte)}</p>` : ''}</div></div>`;
 }
 document.addEventListener('click', e => {
   const b = e.target.closest('.recap-btn'); if(!b) return;
@@ -582,7 +627,7 @@ function row(m){
   else if (r) right = `<span class="score num">${scoreTxt(m)}</span><span class="pill ${r}">${{V:'Victoire',N:'Nul',D:'Défaite'}[r]}</span>`;
   else right = m.h ? `<span class="hour num">${m.h.replace(':','h')}</span>` : `<span class="pill FG">Journée</span>`;
   const opp = m.comp==='Tournoi' ? esc(m.adv) : (m.lieu==='D' ? `PAV ${m.eq==='U13-U14'?'':m.eq} – ${esc(m.adv)}` : `${esc(m.adv)} – PAV ${m.eq==='U13-U14'?'':m.eq}`).replace(/\s+–/,' –');
-  return `<div class="m${RESUMES[m.eq+'|'+m.d]?' has-recap':''}"><div class="d"><b class="num">${d.getDate()}</b><span>${MOIS[d.getMonth()]}</span></div>
+  return `<div class="m${RESUMES[m.eq+'|'+m.d] || friseDe(m) ?' has-recap':''}"><div class="d"><b class="num">${d.getDate()}</b><span>${MOIS[d.getMonth()]}</span></div>
     ${m.comp==='Tournoi' ? '<img class="crest" src="assets/logos/pav.png" alt="">' : crest(m.adv)}<div class="t"><div class="opp">${opp}</div><div class="meta"><span class="${m.eq==='A'?'team-a':''}">${LABEL[m.eq]}</span><span>${esc(compTxt(m))}</span><span>${m.lieu==='D'?'Domicile':'Extérieur'}</span></div></div>
     <div class="r">${right}</div></div>${recapHtml(m)}`;
 }
@@ -708,10 +753,11 @@ let RES_SIG = '';
 function appliquerResultats(r){
   if (!r || typeof r !== 'object') return false;
   const sig = JSON.stringify(r); if (sig === RES_SIG) return false; RES_SIG = sig;
-  matchs.forEach(m => { if (m.auto) { m.sp = m.sa = null; m.joue = false; m.auto = false; } });
+  matchs.forEach(m => { m.frise = null; if (m.auto) { m.sp = m.sa = null; m.joue = false; m.auto = false; } });
   matchs.forEach(m => {
-    const x = r[keyOf(m)];
-    if (x && m.sp == null && m.sa == null && Number.isInteger(x.pav) && Number.isInteger(x.adv)) { m.sp = x.pav; m.sa = x.adv; m.joue = true; m.auto = true; }
+    const x = r[keyOf(m)]; if (!x) return;
+    if (Array.isArray(x.buts)) m.frise = { buts: x.buts, adv: Array.isArray(x.butsAdv) ? x.butsAdv : [] };
+    if (m.sp == null && m.sa == null && Number.isInteger(x.pav) && Number.isInteger(x.adv)) { m.sp = x.pav; m.sa = x.adv; m.joue = true; m.auto = true; }
   });
   return true;
 }
@@ -767,8 +813,9 @@ function initLive(pin, joueurs){
   const choix = matchs.filter(m => (m.eq==='A'||m.eq==='B') && (!m.joue || m.auto) && !m.st && m.comp!=='Tournoi' && (endOf(m) >= new Date(now - 12*3600e3))).sort((a,b)=>a.dt-b.dt).slice(0,4);
   if (!choix.length) return;
   const butsInit = Array.isArray(LIVE.buts) ? LIVE.buts.map(b => ({ n: b.n || '', m: b.m || '' })) : Array.from({ length: LIVE.pav || 0 }, () => ({ n: '', m: '' }));
-  let etat = { key: (liveMatch() ? LIVE.key : keyOf(choix[0])), buts: butsInit, adv: LIVE.adv||0, phase: LIVE.phase||'Avant-match' };
-  if (LIVE.key !== etat.key) { etat.buts = []; etat.adv = 0; etat.phase = 'Avant-match'; }
+  const advInit = Array.isArray(LIVE.butsAdv) ? LIVE.butsAdv.map(b => ({ m: (b && b.m) || '' })) : Array.from({ length: LIVE.adv || 0 }, () => ({ m: '' }));
+  let etat = { key: (liveMatch() ? LIVE.key : keyOf(choix[0])), buts: butsInit, butsAdv: advInit, phase: LIVE.phase||'Avant-match' };
+  if (LIVE.key !== etat.key) { etat.buts = []; etat.butsAdv = []; etat.phase = 'Avant-match'; }
   const fab = document.createElement('button'); fab.className = 'live-fab'; fab.type = 'button'; fab.textContent = 'Score en direct';
   const pan = document.createElement('div'); pan.className = 'live-panel'; pan.hidden = true; pan.setAttribute('role','dialog'); pan.setAttribute('aria-label','Score en direct');
   pan.innerHTML = `<h3>Score en direct</h3>
@@ -776,25 +823,32 @@ function initLive(pin, joueurs){
     <div class="steppers"><div class="stepper"><div class="nm" id="lv-nm-pav">PAV</div><div class="row2"><button type="button" data-t="pav" data-d="-1" aria-label="Retirer un but au PAV">−</button><output id="lv-pav">0</output><button type="button" class="plus" data-t="pav" data-d="1" aria-label="Ajouter un but au PAV">+</button></div></div>
     <div class="stepper"><div class="nm" id="lv-nm-adv">Adversaire</div><div class="row2"><button type="button" data-t="adv" data-d="-1" aria-label="Retirer un but à l'adversaire">−</button><output id="lv-adv">0</output><button type="button" class="plus" data-t="adv" data-d="1" aria-label="Ajouter un but à l'adversaire">+</button></div></div></div>
     <div><label>Buteurs du PAV</label><div class="lv-buts" id="lv-buts"></div></div>
+    <div><label id="lv-advlbl">Buts adverses</label><div class="lv-buts" id="lv-butsadv"></div></div>
     <div class="lv-pick" id="lv-pick" hidden><p id="lv-pick-t">Qui a marqué ?</p><div class="lv-chips" id="lv-chips"></div></div>
     <div><label for="lv-phase">Moment du match</label><select id="lv-phase">${PHASES.map(p => `<option>${p}</option>`).join('')}</select></div>
     <div class="live-actions"><button type="button" class="btn main" id="lv-pub">Mettre à jour le site</button><button type="button" class="btn ghost" id="lv-stop">Arrêter le direct</button></div>
     <p class="live-msg" id="lv-msg">Les supporters voient le score après chaque mise à jour.</p>`;
   document.body.append(pan, fab);
+  const majPick = (m) => {
+    m = m || matchs.find(x => keyOf(x) === etat.key);
+    const vide = etat.buts.findIndex(b => !b.n);
+      const pick = $('#lv-pick');
+      if (m.eq === 'A' && vide >= 0) {
+        $('#lv-pick-t').textContent = `Qui a marqué le but ${vide + 1} ?`;
+        $('#lv-chips').innerHTML = joueurs.map(n => `<button type="button" data-pick="${esc(n)}">${esc(n)}</button>`).join('') + '<button type="button" class="csc" data-pick="CSC">Contre son camp</button>';
+        pick.hidden = false;
+      } else pick.hidden = true;
+  };
   const sync = () => {
     const m = matchs.find(x => keyOf(x) === etat.key);
     $('#lv-match').value = etat.key; $('#lv-pav').textContent = etat.buts.length;
     const lb = $('#lv-buts');
     lb.innerHTML = etat.buts.length ? etat.buts.map((b, i) => `<div class="lv-but"><b>${i+1}</b><input type="text" id="lv-bn-${i}" data-i="${i}" data-f="n" placeholder="Nom du buteur" aria-label="Buteur du but ${i+1}"><select id="lv-bm-${i}" data-i="${i}" data-f="m" aria-label="Minute du but ${i+1}"><option value="">Min.</option>${Array.from({length:40},(_,k)=>`<option value="${k+1}">${k+1}’</option>`).join('')}</select><button type="button" data-del="${i}" aria-label="Supprimer le but ${i+1}">×</button></div>`).join('') : '<p class="lv-empty">Appuie sur + côté PAV à chaque but, puis indique le buteur.</p>';
     etat.buts.forEach((b, i) => { $('#lv-bn-'+i).value = b.n; $('#lv-bm-'+i).value = b.m; });
-    const vide = etat.buts.findIndex(b => !b.n);
-    const pick = $('#lv-pick');
-    if (m.eq === 'A' && vide >= 0) {
-      $('#lv-pick-t').textContent = `Qui a marqué le but ${vide + 1} ?`;
-      $('#lv-chips').innerHTML = joueurs.map(n => `<button type="button" data-pick="${esc(n)}">${esc(n)}</button>`).join('') + '<button type="button" class="csc" data-pick="CSC">Contre son camp</button>';
-      pick.hidden = false;
-    } else pick.hidden = true; $('#lv-adv').textContent = etat.adv; $('#lv-phase').value = etat.phase;
-    $('#lv-nm-pav').textContent = 'PAV ' + m.eq; $('#lv-nm-adv').textContent = m.adv;
+    $('#lv-butsadv').innerHTML = etat.butsAdv.length ? etat.butsAdv.map((b, i) => `<div class="lv-but adv"><b>${i+1}</b><span class="lv-advn">But adverse</span><select id="lv-am-${i}" data-ai="${i}" aria-label="Minute du but adverse ${i+1}"><option value="">Min.</option>${Array.from({length:40},(_,k)=>`<option value="${k+1}">${k+1}’</option>`).join('')}</select><button type="button" data-adel="${i}" aria-label="Supprimer le but adverse ${i+1}">×</button></div>`).join('') : '<p class="lv-empty">Appuie sur + côté adversaire à chaque but encaissé, puis choisis la minute.</p>';
+    etat.butsAdv.forEach((b, i) => { $('#lv-am-'+i).value = b.m; });
+    majPick(m); $('#lv-adv').textContent = etat.butsAdv.length; $('#lv-phase').value = etat.phase;
+    $('#lv-nm-pav').textContent = 'PAV ' + m.eq; $('#lv-nm-adv').textContent = m.adv; $('#lv-advlbl').textContent = 'Buts de ' + m.adv;
   };
   sync();
   let ouvert = true;
@@ -804,6 +858,8 @@ function initLive(pin, joueurs){
   pan.addEventListener('click', e => {
     const pk = e.target.closest('button[data-pick]');
     if (pk) { const i = etat.buts.findIndex(b => !b.n); if (i >= 0) { etat.buts[i].n = pk.dataset.pick; sync(); } return; }
+    const adel = e.target.closest('button[data-adel]');
+    if (adel) { etat.butsAdv.splice(Number(adel.dataset.adel), 1); sync(); return; }
     const del = e.target.closest('button[data-del]');
     if (del) { etat.buts.splice(Number(del.dataset.del), 1); sync(); return; }
     const b = e.target.closest('button[data-t]'); if (!b) return;
@@ -811,11 +867,12 @@ function initLive(pin, joueurs){
     if (b.dataset.t === 'pav') {
       if (d > 0) { etat.buts.push({ n: '', m: '' }); sync(); const mm = matchs.find(x => keyOf(x) === etat.key); const inp = $('#lv-bn-' + (etat.buts.length - 1)); if (inp && mm && mm.eq !== 'A') inp.focus(); }
       else { etat.buts.pop(); sync(); }
-    } else { etat.adv = Math.max(0, etat.adv + d); sync(); }
+    } else { if (d > 0) etat.butsAdv.push({ m: '' }); else etat.butsAdv.pop(); sync(); }
   });
+  pan.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.ai != null) etat.butsAdv[Number(t.dataset.ai)].m = t.value; });
   pan.addEventListener('input', e => { const t = e.target; if (t.dataset && t.dataset.i != null) etat.buts[Number(t.dataset.i)][t.dataset.f] = t.value.slice(0, 40); });
-  pan.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.f === 'n') sync(); });
-  $('#lv-match').addEventListener('change', e => { etat = { key: e.target.value, buts: [], adv: 0, phase: 'Avant-match' }; sync(); });
+  pan.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.f === 'n') majPick(); });
+  $('#lv-match').addEventListener('change', e => { etat = { key: e.target.value, buts: [], butsAdv: [], phase: 'Avant-match' }; sync(); });
   $('#lv-phase').addEventListener('change', e => { etat.phase = e.target.value; });
   const msg = t => { $('#lv-msg').textContent = t; };
   const publier = async (live) => {
@@ -827,7 +884,7 @@ function initLive(pin, joueurs){
     } catch (err) { msg('Pas de connexion. Réessaie dans un instant.'); }
     $('#lv-pub').disabled = $('#lv-stop').disabled = false;
   };
-  $('#lv-pub').addEventListener('click', () => publier({ key: etat.key, pav: etat.buts.length, adv: etat.adv, buts: etat.buts.map(b => ({ n: b.n.trim(), m: b.m.trim() })), phase: etat.phase }));
+  $('#lv-pub').addEventListener('click', () => publier({ key: etat.key, pav: etat.buts.length, adv: etat.butsAdv.length, buts: etat.buts.map(b => ({ n: b.n.trim(), m: b.m.trim() })), butsAdv: etat.butsAdv.map(b => ({ m: b.m })), phase: etat.phase }));
   $('#lv-stop').addEventListener('click', () => publier({}));
 }
 </script>
