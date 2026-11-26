@@ -697,7 +697,7 @@ renderMatchday(); renderNext(); renderCal(); renderTables(); renderJournees();
 /* ===== SCORE EN DIRECT =====
    Le score est stocké dans une petite application Google Apps Script (compte du club).
    Tout le monde le lit ; seul quelqu'un qui connaît le code peut le modifier, via pavfutsal.fr/#direct */
-const LIVE_API = "";
+const LIVE_API = "https://script.google.com/macros/s/AKfycby2mtjx2N4PiSvAzmlZdeNwgT0I21TEV4HGU85kfwbcGnYAyzPb5QEmsP6lgJWWc5I/exec";
 const PHASES = ['Avant-match','1re mi-temps','Mi-temps','2e mi-temps','Terminé'];
 const apiOk = () => /^https:\/\/script\.google(usercontent)?\.com\//.test(LIVE_API);
 function renderLive(){ renderMatchday(); renderNext(); }
