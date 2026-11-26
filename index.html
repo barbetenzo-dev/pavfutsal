@@ -592,6 +592,11 @@ function compTxt(m){ return [COMP[m.comp]||m.comp, m.j].filter(Boolean).join(' �
 /* Frises des matchs : buteurs du PAV (nom + minute) et minutes des buts adverses.
    Remplies automatiquement par le score en direct, ou ici à la main pour les matchs passés. */
 const FRISES = {
+  "A|2026-11-21": { // PAV 7-2 Cagny
+    buts: [{n:"Noah B.",m:"6"},{n:"Maxime L.",m:"9"},{n:"Keliann F.",m:"11"},{n:"Ryan S.",m:"18"},{n:"Maxime L.",m:"23"},{n:"Ghislain L.",m:"26"},{n:"Keliann F.",m:"39"}],
+    adv: ["3","12"],
+    cartons: [{e:"pav",c:"J",n:"Lucas H.",m:"19"}]
+  },
 };
 function friseDe(m){ return FRISES[m.eq+'|'+m.d] || m.frise || null; }
 function friseHtml(m){
