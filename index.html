@@ -151,7 +151,7 @@ section.block.alt{background:var(--surface)}
 .matchday .wrap{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap;padding-block:12px}
 .matchday .lbl{font:400 20px/1 var(--display);letter-spacing:.03em;text-transform:uppercase;background:#111;color:#fff;padding:7px 10px;border-radius:4px}
 .matchday .items{display:flex;gap:6px 22px;flex-wrap:wrap;font:700 17px/1.3 var(--cond);letter-spacing:.04em;text-transform:uppercase;min-width:0}
-.matchday .items b{font:400 20px/1 var(--display);letter-spacing:0;margin-left:6px}
+.matchday .items b{font:400 22px/1 var(--display);letter-spacing:0;margin:0 10px;background:#111;color:#fff;padding:3px 9px;border-radius:4px;display:inline-block}
 .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#fff;margin-right:6px;vertical-align:1px;animation:pulse 1.4s ease-in-out infinite}
 .tag.red .dot{background:#fff}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
@@ -628,7 +628,7 @@ function renderMatchday(){
   $('#md-lbl').innerHTML = enDirect ? '<span class="dot"></span>En direct' : (lm && LIVE.phase==='Terminé' ? 'Score final' : 'Jour de match');
   $('#md-items').innerHTML = today.map(m => {
     const nom = m.comp==='Tournoi' ? esc(m.adv) : (m.lieu==='D' ? `PAV ${m.eq} – ${esc(m.adv)}` : `${esc(m.adv)} – PAV ${m.eq}`);
-    if (m === lm && LIVE.phase && LIVE.phase !== 'Avant-match') return `<span>${nom}<b class="num">${liveScoreTxt(m)}</b> · ${esc(LIVE.phase)}${liveButs().length ? ' · ⚽ ' + liveButs().map(x => esc(x.n)).join(', ') : ''}</span>`;
+    if (m === lm && LIVE.phase && LIVE.phase !== 'Avant-match') { const g = m.lieu==='D' ? `PAV ${m.eq}` : esc(m.adv), d = m.lieu==='D' ? esc(m.adv) : `PAV ${m.eq}`; return `<span>${g}<b class="num">${liveScoreTxt(m)}</b>${d} · ${esc(LIVE.phase)}${liveButs().length ? ' · ⚽ ' + liveButs().map(x => esc(x.n)).join(', ') : ''}</span>`; }
     const quand = m.h ? `${m.h.replace(':','h')}` : 'Toute la journée';
     return `<span>${nom} · ${quand} · ${m.lieu==='D' ? 'à domicile, venez nombreux !' : 'à l’extérieur'}</span>`;
   }).join('');
