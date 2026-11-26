@@ -7,8 +7,15 @@
 <meta name="description" content="Site officiel du Pont-à-Vendin Futsal (PAV Futsal) : calendrier, résultats, score en direct, classements R2 et ID1, résumés des matchs, partenaires et inscriptions.">
 <link rel="canonical" href="https://pavfutsal.fr/">
 <link rel="icon" type="image/png" href="assets/pav.png">
-<link rel="apple-touch-icon" href="assets/pav.png">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="theme-color" content="#111111">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PAV Futsal">
+<meta name="application-name" content="PAV Futsal">
+
 <meta property="og:type" content="website">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:site_name" content="Pont-à-Vendin Futsal">
@@ -312,6 +319,40 @@ footer img{width:36px;height:36px;vertical-align:middle;margin-right:8px}
 .lv-pin input{flex:1;min-width:0;font:600 22px/1 var(--body);letter-spacing:.3em;text-align:center;padding:10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 footer .staff{color:#8A817F;font-size:13px;text-decoration:none}
 footer .staff:hover{color:#fff;text-decoration:underline}
+
+/* ===== Appli (PWA) ===== */
+.app-actions{display:flex;gap:8px;margin-left:12px;order:3}
+nav.menu{order:2}
+.app-btn{display:inline-flex;align-items:center;gap:6px;font:700 13px/1 var(--cond);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:#2A2322;border:1px solid #3a3130;border-radius:999px;padding:9px 12px;cursor:pointer;white-space:nowrap;min-height:38px}
+.app-btn:hover{background:#3a3130}
+.app-btn.on{background:var(--rouge);border-color:var(--rouge)}
+.tabbar{display:none}
+@media (max-width:760px){
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:35;background:#111;border-top:3px solid var(--rouge);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px))}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;min-height:48px;justify-content:center;text-decoration:none;color:#B9B0AE;font:700 12px/1 var(--cond);letter-spacing:.06em;text-transform:uppercase;border-radius:8px}
+  .tabbar a.on{color:#fff}
+  .tabbar a.on svg{color:var(--rouge)}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  .live-fab{bottom:calc(88px + env(safe-area-inset-bottom,0px))!important}
+  .live-panel{bottom:calc(148px + env(safe-area-inset-bottom,0px))!important;max-height:calc(100vh - 180px)!important}
+  .app-actions{margin-left:auto;order:1}
+  nav.menu{order:2}
+  .app-btn span{display:none}
+  .app-btn{padding:9px 10px}
+  .toast{bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
+}
+@media (display-mode: standalone){ nav.menu{display:none} header.top .wrap{flex-wrap:nowrap;padding-block:0} }
+.sheet-bg{position:fixed;inset:0;z-index:60;background:rgba(17,17,17,.6);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:min(520px,100%);box-sizing:border-box;background:var(--surface);color:var(--fg);border-top:6px solid var(--rouge);border-radius:14px 14px 0 0;padding:22px 22px calc(22px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:14px}
+.sheet h3{margin:0;font:400 30px/1.05 var(--display);text-transform:uppercase}
+.sheet p{margin:0;color:var(--muted);font-size:16px}
+.sheet ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.sheet li{display:flex;align-items:center;gap:12px;font-size:17px}
+.sheet li b.n{flex-shrink:0;width:30px;height:30px;border-radius:999px;background:var(--rouge);color:#fff;display:flex;align-items:center;justify-content:center;font:400 17px/1 var(--display)}
+.sheet li svg{flex-shrink:0;color:var(--rouge)}
+.sheet .btn{align-self:stretch;text-align:center}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:70;background:#111;color:#fff;border-left:6px solid var(--rouge);border-radius:8px;padding:14px 18px;font-size:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);max-width:calc(100vw - 32px)}
+.toast b{display:block;font:400 20px/1.1 var(--display);text-transform:uppercase;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -325,6 +366,7 @@ footer .staff:hover{color:#fff;text-decoration:underline}
       <a href="#partenaires">Partenaires</a>
       <a href="#rejoindre">Nous rejoindre</a>
     </nav>
+    <div class="app-actions"><button type="button" class="app-btn" id="app-install" hidden><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/></svg><span>Installer l’appli</span></button><button type="button" class="app-btn" id="app-notif" hidden aria-pressed="false"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15l1.5-2Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg><span>Notifications</span></button></div>
   </div>
 </header>
 <div class="matchday" id="matchday" hidden><div class="wrap"><span class="lbl" id="md-lbl">Jour de match</span><div class="items" id="md-items"></div></div></div>
@@ -792,6 +834,7 @@ async function chargerLive(){
     if (chg || JSON.stringify(nv) !== JSON.stringify(LIVE)) { LIVE = nv; renderLive(); if (chg) { renderCal(); } }
   } catch (e) {}
 }
+const infoMatch = k => { const m = matchs.find(x => keyOf(x) === k); return m ? { nom: m.adv, lieu: m.lieu, eq: m.eq } : {}; };
 async function appel(corps){
   const r = await fetch(LIVE_API, { method: 'POST', body: JSON.stringify(corps) });
   return r.json();
@@ -916,9 +959,106 @@ function initLive(pin, joueurs){
     } catch (err) { msg('Pas de connexion. Réessaie dans un instant.'); }
     $('#lv-pub').disabled = $('#lv-stop').disabled = false;
   };
-  $('#lv-pub').addEventListener('click', () => publier({ key: etat.key, pav: etat.buts.length, adv: etat.butsAdv.length, buts: etat.buts.map(b => ({ n: b.n.trim(), m: b.m.trim() })), butsAdv: etat.butsAdv.map(b => ({ m: b.m })), cartons: etat.cartons.map(c => ({ e: c.e, c: c.c, n: c.e === 'pav' ? c.n.trim() : '', m: c.m })), phase: etat.phase }));
+  $('#lv-pub').addEventListener('click', () => publier({ ...infoMatch(etat.key), key: etat.key, pav: etat.buts.length, adv: etat.butsAdv.length, buts: etat.buts.map(b => ({ n: b.n.trim(), m: b.m.trim() })), butsAdv: etat.butsAdv.map(b => ({ m: b.m })), cartons: etat.cartons.map(c => ({ e: c.e, c: c.c, n: c.e === 'pav' ? c.n.trim() : '', m: c.m })), phase: etat.phase }));
   $('#lv-stop').addEventListener('click', () => publier({}));
 }
+</script>
+<nav class="tabbar" aria-label="Navigation de l’appli"><a href="#accueil" data-s="accueil"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5h4v5"/></svg>Accueil</a><a href="#calendrier" data-s="calendrier"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Matchs</a><a href="#classements" data-s="classements"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5A3.5 3.5 0 0 1 16.5 11"/><path d="M12 14v3.5M8.5 20.5h7M9.5 20.5c0-1.7 1-3 2.5-3s2.5 1.3 2.5 3"/></svg>Classements</a><a href="#club" data-s="club"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg>Club</a></nav>
+<script>
+/* ===== Appli installable + notifications ===== */
+(() => {
+  const FB = null;
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const $b = id => document.getElementById(id);
+  let reg = null;
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').then(r => { reg = r; majNotif(); }).catch(() => {});
+  }
+  // Onglet actif de la barre du bas
+  const tabs = [...document.querySelectorAll('.tabbar a')];
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) tabs.forEach(a => a.classList.toggle('on', a.dataset.s === e.target.id)); });
+  }, { rootMargin: '-45% 0px -50% 0px' }) : null;
+  if (io) ['accueil','calendrier','classements','club'].forEach(id => { const s = document.getElementById(id); if (s) io.observe(s); });
+
+  const feuille = (html) => {
+    const bg = document.createElement('div'); bg.className = 'sheet-bg';
+    bg.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}<button type="button" class="btn ghost" data-close>Fermer</button></div>`;
+    bg.addEventListener('click', e => { if (e.target === bg || e.target.closest('[data-close]')) bg.remove(); });
+    document.body.append(bg); bg.querySelector('[data-close]').focus();
+  };
+  const toast = (t, b) => {
+    const d = document.createElement('div'); d.className = 'toast'; d.setAttribute('role','status');
+    const bt = document.createElement('b'); bt.textContent = t; d.append(bt, document.createTextNode(b || ''));
+    document.body.append(d); setTimeout(() => d.remove(), 6000);
+  };
+  const aideIOS = (pourNotif) => feuille(`<h3>${pourNotif ? 'D’abord, installe l’appli' : 'Installer l’appli PAV'}</h3>
+    <p>${pourNotif ? 'Sur iPhone, les notifications marchent seulement depuis l’appli ajoutée à l’écran d’accueil.' : 'En 3 étapes, depuis Safari :'}</p>
+    <ol><li><b class="n">1</b><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11M8 7.5l4-4 4 4"/><path d="M6.5 11H5v9.5h14V11h-1.5"/></svg><span>Touche <b>Partager</b> en bas de Safari</span></li>
+    <li><b class="n">2</b><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8.5v7M8.5 12h7"/></svg><span>Choisis <b>Sur l’écran d’accueil</b></span></li>
+    <li><b class="n">3</b><span>Touche <b>Ajouter</b> : l’icône PAV apparaît</span></li></ol>`);
+
+  // ----- Installer -----
+  let invite = null;
+  const bInst = $b('app-install');
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); invite = e; if (!standalone) bInst.hidden = false; });
+  window.addEventListener('appinstalled', () => { bInst.hidden = true; invite = null; toast('Appli installée', 'Retrouve le PAV sur ton écran d’accueil.'); });
+  if (iOS && !standalone) bInst.hidden = false;
+  bInst.addEventListener('click', async () => {
+    if (invite) { invite.prompt(); try { await invite.userChoice; } catch(e) {} invite = null; bInst.hidden = true; }
+    else if (iOS) aideIOS(false);
+    else feuille('<h3>Installer l’appli PAV</h3><p>Ouvre le menu de ton navigateur (⋮) puis choisis <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>.</p>');
+  });
+
+  // ----- Notifications -----
+  const bNot = $b('app-notif');
+  const okFB = FB && FB.apiKey && FB.vapidKey && FB.projectId;
+  const supporte = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  let messaging = null;
+  const etat = () => { try { return localStorage.getItem('pav-notif') === '1'; } catch(e) { return false; } };
+  const setEtat = v => { try { localStorage.setItem('pav-notif', v ? '1' : '0'); } catch(e) {} bNot.classList.toggle('on', v); bNot.setAttribute('aria-pressed', String(v)); bNot.title = v ? 'Notifications activées' : 'Activer les notifications'; };
+  function majNotif(){
+    if (!okFB) return;
+    if (supporte || iOS) { bNot.hidden = false; setEtat(etat() && Notification.permission === 'granted'); }
+  }
+  const chargeFB = () => new Promise((ok, ko) => {
+    if (window.firebase && firebase.messaging) return ok();
+    const v = '10.12.2', urls = [`https://www.gstatic.com/firebasejs/${v}/firebase-app-compat.js`, `https://www.gstatic.com/firebasejs/${v}/firebase-messaging-compat.js`];
+    const next = i => { if (i >= urls.length) return ok(); const s = document.createElement('script'); s.src = urls[i]; s.onload = () => next(i+1); s.onerror = ko; document.head.append(s); };
+    next(0);
+  });
+  async function initMessaging(){
+    await chargeFB();
+    if (!firebase.apps.length) firebase.initializeApp({ apiKey: FB.apiKey, authDomain: FB.authDomain, projectId: FB.projectId, messagingSenderId: FB.messagingSenderId, appId: FB.appId });
+    messaging = firebase.messaging();
+    messaging.onMessage(p => { const n = (p && (p.notification || p.data)) || {}; toast(n.title || 'PAV Futsal', n.body || ''); if (typeof chargerLive === 'function') chargerLive(); });
+  }
+  bNot.addEventListener('click', async () => {
+    if (iOS && !standalone) return aideIOS(true);
+    if (!supporte) return feuille('<h3>Notifications</h3><p>Ton navigateur ne gère pas les notifications. Essaie avec Chrome, ou installe l’appli.</p>');
+    if (etat()) {
+      bNot.disabled = true;
+      try { await initMessaging(); const t = await messaging.getToken({ vapidKey: FB.vapidKey, serviceWorkerRegistration: reg || await navigator.serviceWorker.ready });
+        if (t && typeof LIVE_API === 'string' && LIVE_API) await fetch(LIVE_API, { method: 'POST', body: JSON.stringify({ action: 'desabonner', token: t }) });
+        await messaging.deleteToken(); } catch(e) {}
+      setEtat(false); bNot.disabled = false; toast('Notifications coupées', 'Tu ne recevras plus les alertes du PAV.'); return;
+    }
+    bNot.disabled = true;
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { feuille('<h3>Notifications refusées</h3><p>Pour les activer plus tard, autorise les notifications pour pavfutsal.fr dans les réglages de ton téléphone ou de ton navigateur.</p>'); bNot.disabled = false; return; }
+      await initMessaging();
+      const t = await messaging.getToken({ vapidKey: FB.vapidKey, serviceWorkerRegistration: reg || await navigator.serviceWorker.ready });
+      if (!t) throw new Error('token');
+      const r = await fetch(LIVE_API, { method: 'POST', body: JSON.stringify({ action: 'abonner', token: t }) }).then(r => r.json());
+      if (!r.ok) throw new Error('abonnement');
+      setEtat(true); toast('Notifications activées 🔔', 'Buts, mi-temps et score final du PAV en direct.');
+    } catch(e) { feuille('<h3>Oups</h3><p>L’activation n’a pas marché. Vérifie ta connexion et réessaie.</p>'); }
+    bNot.disabled = false;
+  });
+  majNotif();
+})();
 </script>
 </body>
 </html>
