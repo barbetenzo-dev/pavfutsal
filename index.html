@@ -329,6 +329,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
 footer img{width:36px;height:36px;vertical-align:middle;margin-right:8px}
 .lv-pin{display:flex;gap:10px}
 .lv-pin input{flex:1;min-width:0;font:600 22px/1 var(--body);letter-spacing:.3em;text-align:center;padding:10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+.prov{margin:8px 0 0;padding:8px 12px;border-radius:6px;background:#FFF4D6;color:#5C4300;font-size:14px;line-height:1.4}
 footer .legal a{color:#B9B0AE;text-decoration:none}footer .legal a:hover{color:#fff;text-decoration:underline}
 footer .staff{color:#8A817F;font-size:13px;text-decoration:none}
 footer .staff:hover{color:#fff;text-decoration:underline}
@@ -432,8 +433,8 @@ nav.menu{order:2}
       <div><div class="eyebrow">Championnats</div><h2>Classements</h2><p>Mis à jour après chaque week-end de match.</p></div>
     </div>
     <div class="tables">
-      <div class="tbl-card"><h3>Régional 2</h3><div class="sub">Senior A · Ligue des Hauts-de-France</div><div style="overflow-x:auto"><table class="tbl" id="t-r2"><thead><tr><th>#</th><th>Équipe</th><th>J</th><th>Pts</th></tr></thead><tbody></tbody></table></div></div>
-      <div class="tbl-card"><h3>Interdistrict 1</h3><div class="sub">Senior B · Poule A</div><div style="overflow-x:auto"><table class="tbl" id="t-id1"><thead><tr><th>#</th><th>Équipe</th><th>J</th><th>Diff</th><th>Pts</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="tbl-card"><h3>Régional 2</h3><div class="sub">Senior A · Ligue des Hauts-de-France</div><p class="prov" id="prov-r2" hidden></p><div style="overflow-x:auto"><table class="tbl" id="t-r2"><thead><tr><th>#</th><th>Équipe</th><th>J</th><th>Pts</th></tr></thead><tbody></tbody></table></div></div>
+      <div class="tbl-card"><h3>Interdistrict 1</h3><div class="sub">Senior B · Poule A</div><p class="prov" id="prov-id1" hidden></p><div style="overflow-x:auto"><table class="tbl" id="t-id1"><thead><tr><th>#</th><th>Équipe</th><th>J</th><th>Diff</th><th>Pts</th></tr></thead><tbody></tbody></table></div></div>
     </div>
     <div class="legend"><span><i style="background:var(--zone-up)"></i>Montée</span><span><i style="background:var(--zone-down)"></i>Relégation</span><span><i style="background:var(--rouge)"></i>Pont-à-Vendin</span><span>FG : forfait général</span></div>
     <div class="journees" id="journees-r2">
@@ -823,6 +824,7 @@ function renderJournees(){
   };
   $('#jr-prev').addEventListener('click', () => { if (cur > 1) { cur--; draw(); } });
   $('#jr-next').addEventListener('click', () => { if (cur < max) { cur++; draw(); } });
+  window.redrawJournees = draw;
   draw();
 }
 renderMatchday(); renderNext(); renderCal(); renderTables(); renderJournees();
@@ -845,7 +847,42 @@ function appliquerResultats(r){
     if (Array.isArray(x.buts)) m.frise = { buts: x.buts, adv: Array.isArray(x.butsAdv) ? x.butsAdv : [], cartons: Array.isArray(x.cartons) ? x.cartons : [] };
     if (m.sp == null && m.sa == null && Number.isInteger(x.pav) && Number.isInteger(x.adv)) { m.sp = x.pav; m.sa = x.adv; m.joue = true; m.auto = true; }
   });
+  classementProvisoire();
   return true;
+}
+/* Classement provisoire : intègre nos matchs terminés en direct, en attendant le classement officiel */
+const CL_BASE = { r2: JSON.parse(JSON.stringify(CLASSEMENT_R2)), id1: JSON.parse(JSON.stringify(CLASSEMENT_ID1)) };
+const JR_BASE = R2_JOURNEES.map(r => [r[5], r[6]]);
+const sansAccent = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ');
+const procheClub = (a, b) => { const B = sansAccent(b); return sansAccent(a).split(/\s+/).filter(w => w.length >= 3 && !['futsal','club','les'].includes(w)).filter(w => B.includes(w)).length; };
+const estPav = n => /pont-.-vendin/i.test(n);
+function trouverClub(liste, nom, champ){ let best = null, sc = 0; liste.forEach(x => { const s = procheClub(nom, champ(x)); if (s > sc) { sc = s; best = x; } }); return best; }
+function classementProvisoire(){
+  const tabs = { r2: CL_BASE.r2.map(r => r.slice()), id1: CL_BASE.id1.map(r => r.slice()) }, faits = { r2: [], id1: [] };
+  R2_JOURNEES.forEach((r, i) => { r[5] = JR_BASE[i][0]; r[6] = JR_BASE[i][1]; });
+  const pts = (a, b) => a > b ? 3 : a === b ? 1 : 0;
+  matchs.filter(m => m.auto && (m.comp === 'R2' || m.comp === 'ID1')).sort((a, b) => a.dt - b.dt).forEach(m => {
+    const k = m.comp === 'R2' ? 'r2' : 'id1', t = tabs[k];
+    const pav = t.find(r => estPav(r[1])), adv = trouverClub(t.filter(r => !estPav(r[1])), m.adv, r => r[1]);
+    const maj = (r, bp, bc) => { if (!r || r[2] == null) return; r[2] += 1;
+      if (k === 'r2') r[3] += pts(bp, bc); else { const nd = (parseInt(r[3], 10) || 0) + bp - bc; r[3] = (nd > 0 ? '+' : '') + nd; r[4] += pts(bp, bc); } };
+    maj(pav, m.sp, m.sa); maj(adv, m.sa, m.sp);
+    faits[k].push(m);
+    if (k === 'r2') {   // remplit aussi la journée de la poule
+      const code = trouverClub(Object.keys(R2_NOMS).filter(c => c !== 'PAV'), m.adv, c => R2_NOMS[c]);
+      const row = R2_JOURNEES.find(r => r[5] == null && ((r[3] === 'PAV' && r[4] === code) || (r[4] === 'PAV' && r[3] === code)));
+      if (row) { row[5] = row[3] === 'PAV' ? m.sp : m.sa; row[6] = row[3] === 'PAV' ? m.sa : m.sp; }
+    }
+  });
+  ['r2', 'id1'].forEach(k => {
+    const t = tabs[k], pi = k === 'r2' ? 3 : 4, jeu = t.filter(r => r[2] != null), fg = t.filter(r => r[2] == null);
+    if (faits[k].length) jeu.sort((a, b) => (b[pi] - a[pi]) || (k === 'id1' ? (parseInt(b[3], 10) - parseInt(a[3], 10)) : 0) || (a[0] - b[0]));
+    jeu.forEach((r, i) => { r[0] = i + 1; r[r.length - 1] = estPav(r[1]) ? 'pav' : i === 0 ? 'up' : i >= jeu.length - 2 ? 'down' : ''; });
+    const cible = k === 'r2' ? CLASSEMENT_R2 : CLASSEMENT_ID1; cible.splice(0, cible.length, ...jeu.concat(fg));
+    const note = document.getElementById('prov-' + k);
+    if (note) { note.hidden = !faits[k].length; note.textContent = faits[k].length ? 'Classement provisoire : intègre ' + faits[k].map(m => (m.lieu === 'D' ? `PAV ${m.eq} ${m.sp}-${m.sa} ${m.adv}` : `${m.adv} ${m.sa}-${m.sp} PAV ${m.eq}`) + ` (${m.dt.getDate()}/${m.dt.getMonth() + 1})`).join(', ') + ', en attendant les autres résultats de la journée.' : ''; }
+  });
+  renderTables(); if (window.redrawJournees) window.redrawJournees();
 }
 async function chargerLive(){
   if (!apiOk()) return;
