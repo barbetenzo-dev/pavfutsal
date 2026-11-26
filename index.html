@@ -27,7 +27,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Pont-à-Vendin Futsal – le site officiel du club">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SportsTeam", "name": "Pont-à-Vendin Futsal", "alternateName": ["PAV Futsal", "PAV"], "sport": "Futsal", "url": "https://pavfutsal.fr/", "logo": "https://pavfutsal.fr/assets/pav.png", "image": "https://pavfutsal.fr/assets/equipe-a.jpg", "address": {"@type": "PostalAddress", "addressLocality": "Pont-à-Vendin", "postalCode": "62880", "addressRegion": "Hauts-de-France", "addressCountry": "FR"}, "memberOf": {"@type": "SportsOrganization", "name": "Ligue des Hauts-de-France de Football"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SportsTeam", "name": "Pont-à-Vendin Futsal", "alternateName": ["PAV Futsal", "PAV"], "sport": "Futsal", "url": "https://pavfutsal.fr/", "logo": "https://pavfutsal.fr/assets/pav.png", "image": "https://pavfutsal.fr/assets/equipe-a.jpg", "address": {"@type": "PostalAddress", "addressLocality": "Pont-à-Vendin", "postalCode": "62880", "addressRegion": "Hauts-de-France", "addressCountry": "FR"}, "memberOf": {"@type": "SportsOrganization", "name": "Ligue des Hauts-de-France de Football"}, "sameAs": ["https://www.facebook.com/profile.php?id=61572698814286", "https://www.instagram.com/pavfutsal/"], "location": {"@type": "SportsActivityLocation", "name": "Halle des Sports Séverin Blanc", "address": {"@type": "PostalAddress", "streetAddress": "Rue Arthur Thomas", "addressLocality": "Pont-à-Vendin", "postalCode": "62880", "addressCountry": "FR"}}}</script>
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <link rel="preload" href="/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
@@ -314,6 +314,15 @@ section.block.alt{background:var(--surface)}
 .contact dt,.contact .k{font:700 14px/1.4 var(--cond);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .todo{color:var(--muted);font-style:italic}
 @media (max-width:480px){.contact div{grid-template-columns:1fr;gap:2px}}
+.itin{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.itin a{display:inline-flex;align-items:center;gap:6px;font:700 14px/1 var(--cond);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;color:var(--fg);background:var(--surface-2);border-radius:999px;padding:9px 12px;min-height:36px;box-sizing:border-box}
+.itin a:hover{background:var(--line)}
+.socials{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.socials a{display:inline-flex;align-items:center;gap:8px;font:700 16px/1 var(--cond);letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border-radius:8px;padding:14px 18px;min-height:48px;box-sizing:border-box}
+.btn-fb{background:var(--rouge);color:#fff}.btn-fb:hover{background:var(--rouge-fonce)}
+.btn-ig{background:#111;color:#fff}.btn-ig:hover{background:#333}
+footer .soc{display:inline-flex;gap:14px;margin-left:16px;vertical-align:middle}footer .soc a{color:#B9B0AE}footer .soc a:hover{color:#fff}
+
 
 footer{background:#111;color:#B9B0AE;padding-block:28px calc(28px + env(safe-area-inset-bottom,0px));font-size:14px}
 footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
@@ -460,19 +469,19 @@ nav.menu{order:2}
     <div>
       <div class="eyebrow">Nous rejoindre</div>
       <h2 style="font-size:clamp(38px,5vw,60px);text-transform:uppercase;margin:6px 0 14px">Envie de jouer ?</h2>
-      <p style="margin:0;max-width:56ch">Jeunes, seniors ou loisirs : le club accueille de nouveaux joueurs toute la saison. Passez nous voir à l'entraînement ou écrivez-nous sur Facebook.</p>
+      <p style="margin:0;max-width:56ch">Jeunes, seniors ou loisirs : le club accueille de nouveaux joueurs toute la saison. Passez nous voir à l'entraînement à la Halle des Sports Séverin Blanc ou écrivez-nous sur Facebook.</p>
       <div class="contact">
-        <div><span class="k">Salle</span><span class="todo">Nom et adresse de la salle à compléter</span></div>
-        <div><span class="k">Entraînements</span><span class="todo">Jours et horaires à compléter</span></div>
-        <div><span class="k">Facebook</span><span>Pont-à-Vendin Futsal</span></div>
-        <div><span class="k">Contact</span><span class="todo">Adresse e-mail du club à compléter</span></div>
+        <div><span class="k">Salle</span><span><b>Halle des Sports Séverin Blanc</b><br>Rue Arthur Thomas, 62880 Pont-à-Vendin<span class="itin"><a href="https://www.google.com/maps/search/?api=1&amp;query=Halle%20des%20Sports%20S%C3%A9verin%20Blanc%2C%20Rue%20Arthur%20Thomas%2C%2062880%20Pont-%C3%A0-Vendin" target="_blank" rel="noopener"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Google Maps</a><a href="https://maps.apple.com/?q=Halle%20des%20Sports%20S%C3%A9verin%20Blanc%2C%20Rue%20Arthur%20Thomas%2C%2062880%20Pont-%C3%A0-Vendin" target="_blank" rel="noopener">Plans</a><a href="https://waze.com/ul?q=Halle%20des%20Sports%20S%C3%A9verin%20Blanc%2C%20Rue%20Arthur%20Thomas%2C%2062880%20Pont-%C3%A0-Vendin&amp;navigate=yes" target="_blank" rel="noopener">Waze</a></span></span></div>
+        <div><span class="k">Entraînements</span><span>Lundi et jeudi soir<br>Loisirs : samedi après-midi</span></div>
+        <div><span class="k">Contact</span><span>Par message sur notre page Facebook, on répond vite !</span></div>
       </div>
+      <div class="socials"><a class="btn-fb" href="https://www.facebook.com/profile.php?id=61572698814286" target="_blank" rel="noopener"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.9v3h2.6V21h3Z"/></svg>Nous écrire sur Facebook</a><a class="btn-ig" href="https://www.instagram.com/pavfutsal/" target="_blank" rel="noopener"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg>@pavfutsal</a></div>
     </div>
   </div>
 </section>
 </main>
 
-<footer><div class="wrap"><span><img src="assets/pav.png" alt="">Pont-à-Vendin Futsal</span><a href="#direct" class="staff">Espace dirigeants</a><span class="legal"><a href="/mentions-legales.html">Mentions légales</a> · <a href="/confidentialite.html">Confidentialité</a></span><span id="maj">Mis à jour le 26/11/2026</span></div></footer>
+<footer><div class="wrap"><span><img src="assets/pav.png" alt="">Pont-à-Vendin Futsal<span class="soc"><a href="https://www.facebook.com/profile.php?id=61572698814286" target="_blank" rel="noopener" aria-label="Facebook du club"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.9v3h2.6V21h3Z"/></svg></a><a href="https://www.instagram.com/pavfutsal/" target="_blank" rel="noopener" aria-label="Instagram du club"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/></svg></a></span></span><a href="#direct" class="staff">Espace dirigeants</a><span class="legal"><a href="/mentions-legales.html">Mentions légales</a> · <a href="/confidentialite.html">Confidentialité</a></span><span id="maj">Mis à jour le 26/11/2026</span></div></footer>
 
 <script>
 /* ===== DONNÉES DU CLUB (à mettre à jour) ===== */
