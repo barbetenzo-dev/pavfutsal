@@ -284,6 +284,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
 footer img{width:36px;height:36px;vertical-align:middle;margin-right:8px}
 .lv-pin{display:flex;gap:10px}
 .lv-pin input{flex:1;min-width:0;font:600 22px/1 var(--body);letter-spacing:.3em;text-align:center;padding:10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
+footer .staff{color:#8A817F;font-size:13px;text-decoration:none}
+footer .staff:hover{color:#fff;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -398,7 +400,7 @@ footer img{width:36px;height:36px;vertical-align:middle;margin-right:8px}
 </section>
 </main>
 
-<footer><div class="wrap"><span><img src="assets/pav.png" alt="">Pont-à-Vendin Futsal</span><span id="maj">Mis à jour le 25/11/2026</span></div></footer>
+<footer><div class="wrap"><span><img src="assets/pav.png" alt="">Pont-à-Vendin Futsal</span><a href="#direct" class="staff">Espace dirigeants</a><span id="maj">Mis à jour le 25/11/2026</span></div></footer>
 
 <script>
 /* ===== DONNÉES DU CLUB (à mettre à jour) ===== */
@@ -741,8 +743,12 @@ function ouvrirDirect(){
   $('#lv-login').addEventListener('submit', e => { e.preventDefault(); essayer($('#lv-code').value.trim()); });
   if (pin) essayer(pin); else $('#lv-code').focus();
 }
-if (location.hash === '#direct') ouvrirDirect();
-window.addEventListener('hashchange', () => { if (location.hash === '#direct') ouvrirDirect(); });
+const veutDirect = () => location.hash === '#direct' || /[?&]direct\b/.test(location.search);
+if (veutDirect()) ouvrirDirect();
+document.addEventListener('click', e => { const a = e.target.closest('a[href="#direct"]'); if (a) { e.preventDefault(); ouvrirDirect(); } });
+window.addEventListener('hashchange', () => { const veutDirect = () => location.hash === '#direct' || /[?&]direct\b/.test(location.search);
+if (veutDirect()) ouvrirDirect();
+document.addEventListener('click', e => { const a = e.target.closest('a[href="#direct"]'); if (a) { e.preventDefault(); ouvrirDirect(); } }); });
 
 function initLive(pin, joueurs){
   const choix = matchs.filter(m => (m.eq==='A'||m.eq==='B') && !m.joue && !m.st && m.comp!=='Tournoi' && (endOf(m) >= new Date(now - 12*3600e3))).sort((a,b)=>a.dt-b.dt).slice(0,4);
