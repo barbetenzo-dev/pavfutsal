@@ -161,6 +161,9 @@ section.block.alt{background:var(--surface)}
 .frise .sep b{font:400 18px/1 var(--display);letter-spacing:0}
 .frise .sep.ko{background:transparent;color:var(--muted)}
 .frise .sep.ft{background:#111;color:#fff}
+.frise .ev.cart .who{font-weight:500;color:var(--muted)}
+.frise .ev.cart .who.pav{color:var(--fg)}
+.frise .ev.cart .mid{font:700 14px/1 var(--cond);color:var(--muted)}
 
 /* Jour de match + direct */
 .matchday{background:var(--rouge);color:#fff}
@@ -183,7 +186,13 @@ section.block.alt{background:var(--surface)}
 .lv-but input{width:100%;font:600 15px/1.2 var(--body);padding:9px 10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 .lv-but button{width:34px;height:34px;border-radius:50%;border:0;background:var(--surface-2);color:var(--fg);font:700 18px/1 var(--body);cursor:pointer}
 .lv-empty{font-size:14px;color:var(--muted);margin:0}
-.lv-advn{font:600 15px/1.2 var(--body);color:var(--muted);padding:9px 0}
+.lv-advn{font:600 15px/1.2 var(--body);color:var(--muted);padding:9px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-cartbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.lv-cartbtns button{font:700 13px/1.2 var(--cond);letter-spacing:.03em;text-transform:uppercase;padding:9px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg);cursor:pointer;display:flex;align-items:center;gap:6px;justify-content:center;min-width:0}
+.lv-cartbtns button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.carte-ic{display:inline-block;width:11px;height:15px;border-radius:2px;flex-shrink:0;vertical-align:-2px}
+.carte-ic.J{background:#F5C400}.carte-ic.R{background:#D3120B}
+.lv-but.carte b{display:flex;align-items:center;justify-content:center}
 .lv-pick{background:var(--bg);border:2px solid var(--rouge);border-radius:8px;padding:10px}
 .lv-pick p{margin:0 0 8px;font:700 14px/1.2 var(--cond);letter-spacing:.06em;text-transform:uppercase}
 .lv-chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -591,11 +600,18 @@ function friseHtml(m){
   const ev = [];
   (f.buts||[]).forEach(b => ev.push({ pav:true, n:b.n, m: parseInt(b.m,10) || null }));
   (f.adv||[]).forEach(x => ev.push({ pav:false, n:'', m: parseInt(typeof x === 'object' ? x.m : x,10) || null }));
+  (f.cartons||[]).forEach(c => ev.push({ carte: c.c === 'R' ? 'R' : 'J', pav: c.e === 'pav', n: c.n || '', m: parseInt(c.m,10) || null }));
   ev.sort((a,b) => (a.m ?? 99) - (b.m ?? 99));
   let p = 0, a = 0, mt = null, html = `<div class="sep ko">Coup d’envoi${m.h ? ' · ' + m.h.replace(':','h') : ''}</div>`;
   const sc = () => D ? `${p} – ${a}` : `${a} – ${p}`;
   ev.forEach(e => {
     if (mt === null && e.m !== null && e.m > 20) { mt = sc(); html += `<div class="sep">Mi-temps <b>${mt}</b></div>`; }
+    if (e.carte) {
+      const aG = e.pav === D, ic = `<i class="carte-ic ${e.carte}" aria-label="Carton ${e.carte==='R'?'rouge':'jaune'}"></i>`;
+      const nm = e.pav ? esc(e.n || nomPav) : esc(nomAdv), cl = `who ${e.pav?'pav':'opp'}`;
+      html += `<div class="ev cart"><div class="h">${aG ? `<span class="${cl}">${nm} ${ic}</span>` : ''}</div><div class="mid">${e.m ? e.m + '’' : ''}</div><div class="a">${aG ? '' : `<span class="${cl}">${ic} ${nm}</span>`}</div></div>`;
+      return;
+    }
     if (e.pav) p++; else a++;
     const nom = e.pav ? (e.n === 'CSC' ? 'Contre son camp' : esc(e.n || 'But')) : esc(nomAdv);
     const aGauche = e.pav === D, cls = `who ${e.pav?'pav':'opp'}`;
@@ -756,7 +772,7 @@ function appliquerResultats(r){
   matchs.forEach(m => { m.frise = null; if (m.auto) { m.sp = m.sa = null; m.joue = false; m.auto = false; } });
   matchs.forEach(m => {
     const x = r[keyOf(m)]; if (!x) return;
-    if (Array.isArray(x.buts)) m.frise = { buts: x.buts, adv: Array.isArray(x.butsAdv) ? x.butsAdv : [] };
+    if (Array.isArray(x.buts)) m.frise = { buts: x.buts, adv: Array.isArray(x.butsAdv) ? x.butsAdv : [], cartons: Array.isArray(x.cartons) ? x.cartons : [] };
     if (m.sp == null && m.sa == null && Number.isInteger(x.pav) && Number.isInteger(x.adv)) { m.sp = x.pav; m.sa = x.adv; m.joue = true; m.auto = true; }
   });
   return true;
@@ -814,8 +830,9 @@ function initLive(pin, joueurs){
   if (!choix.length) return;
   const butsInit = Array.isArray(LIVE.buts) ? LIVE.buts.map(b => ({ n: b.n || '', m: b.m || '' })) : Array.from({ length: LIVE.pav || 0 }, () => ({ n: '', m: '' }));
   const advInit = Array.isArray(LIVE.butsAdv) ? LIVE.butsAdv.map(b => ({ m: (b && b.m) || '' })) : Array.from({ length: LIVE.adv || 0 }, () => ({ m: '' }));
-  let etat = { key: (liveMatch() ? LIVE.key : keyOf(choix[0])), buts: butsInit, butsAdv: advInit, phase: LIVE.phase||'Avant-match' };
-  if (LIVE.key !== etat.key) { etat.buts = []; etat.butsAdv = []; etat.phase = 'Avant-match'; }
+  const cartInit = Array.isArray(LIVE.cartons) ? LIVE.cartons.map(c => ({ e: c.e === 'adv' ? 'adv' : 'pav', c: c.c === 'R' ? 'R' : 'J', n: c.n || '', m: c.m || '' })) : [];
+  let etat = { key: (liveMatch() ? LIVE.key : keyOf(choix[0])), buts: butsInit, butsAdv: advInit, cartons: cartInit, phase: LIVE.phase||'Avant-match' };
+  if (LIVE.key !== etat.key) { etat.buts = []; etat.butsAdv = []; etat.cartons = []; etat.phase = 'Avant-match'; }
   const fab = document.createElement('button'); fab.className = 'live-fab'; fab.type = 'button'; fab.textContent = 'Score en direct';
   const pan = document.createElement('div'); pan.className = 'live-panel'; pan.hidden = true; pan.setAttribute('role','dialog'); pan.setAttribute('aria-label','Score en direct');
   pan.innerHTML = `<h3>Score en direct</h3>
@@ -824,6 +841,7 @@ function initLive(pin, joueurs){
     <div class="stepper"><div class="nm" id="lv-nm-adv">Adversaire</div><div class="row2"><button type="button" data-t="adv" data-d="-1" aria-label="Retirer un but à l'adversaire">−</button><output id="lv-adv">0</output><button type="button" class="plus" data-t="adv" data-d="1" aria-label="Ajouter un but à l'adversaire">+</button></div></div></div>
     <div><label>Buteurs du PAV</label><div class="lv-buts" id="lv-buts"></div></div>
     <div><label id="lv-advlbl">Buts adverses</label><div class="lv-buts" id="lv-butsadv"></div></div>
+    <div><label>Cartons</label><div class="lv-cartbtns"><button type="button" data-carte="pav|J"><i class="carte-ic J"></i><span id="lv-cp1">PAV</span></button><button type="button" data-carte="pav|R"><i class="carte-ic R"></i><span id="lv-cp2">PAV</span></button><button type="button" data-carte="adv|J"><i class="carte-ic J"></i><span id="lv-ca1">Adversaire</span></button><button type="button" data-carte="adv|R"><i class="carte-ic R"></i><span id="lv-ca2">Adversaire</span></button></div><div class="lv-buts" id="lv-cartons"></div><datalist id="lv-jl"></datalist></div>
     <div class="lv-pick" id="lv-pick" hidden><p id="lv-pick-t">Qui a marqué ?</p><div class="lv-chips" id="lv-chips"></div></div>
     <div><label for="lv-phase">Moment du match</label><select id="lv-phase">${PHASES.map(p => `<option>${p}</option>`).join('')}</select></div>
     <div class="live-actions"><button type="button" class="btn main" id="lv-pub">Mettre à jour le site</button><button type="button" class="btn ghost" id="lv-stop">Arrêter le direct</button></div>
@@ -847,6 +865,10 @@ function initLive(pin, joueurs){
     etat.buts.forEach((b, i) => { $('#lv-bn-'+i).value = b.n; $('#lv-bm-'+i).value = b.m; });
     $('#lv-butsadv').innerHTML = etat.butsAdv.length ? etat.butsAdv.map((b, i) => `<div class="lv-but adv"><b>${i+1}</b><span class="lv-advn">But adverse</span><select id="lv-am-${i}" data-ai="${i}" aria-label="Minute du but adverse ${i+1}"><option value="">Min.</option>${Array.from({length:40},(_,k)=>`<option value="${k+1}">${k+1}’</option>`).join('')}</select><button type="button" data-adel="${i}" aria-label="Supprimer le but adverse ${i+1}">×</button></div>`).join('') : '<p class="lv-empty">Appuie sur + côté adversaire à chaque but encaissé, puis choisis la minute.</p>';
     etat.butsAdv.forEach((b, i) => { $('#lv-am-'+i).value = b.m; });
+    $('#lv-cartons').innerHTML = etat.cartons.map((c, i) => `<div class="lv-but carte"><b><i class="carte-ic ${c.c}"></i></b>${c.e === 'pav' ? `<input type="text" id="lv-cn-${i}" data-ci="${i}" data-cf="n" list="lv-jl" placeholder="Joueur du PAV" aria-label="Joueur averti">` : `<span class="lv-advn">${esc(m.adv)}</span>`}<select id="lv-cm-${i}" data-ci="${i}" data-cf="m" aria-label="Minute du carton"><option value="">Min.</option>${Array.from({length:40},(_,k)=>`<option value="${k+1}">${k+1}’</option>`).join('')}</select><button type="button" data-cdel="${i}" aria-label="Supprimer le carton">×</button></div>`).join('');
+    etat.cartons.forEach((c, i) => { const n = $('#lv-cn-'+i); if (n) n.value = c.n; $('#lv-cm-'+i).value = c.m; });
+    $('#lv-jl').innerHTML = m.eq === 'A' ? joueurs.map(n => `<option value="${esc(n)}">`).join('') : '';
+    $('#lv-ca1').textContent = $('#lv-ca2').textContent = m.adv; $('#lv-cp1').textContent = $('#lv-cp2').textContent = 'PAV ' + m.eq;
     majPick(m); $('#lv-adv').textContent = etat.butsAdv.length; $('#lv-phase').value = etat.phase;
     $('#lv-nm-pav').textContent = 'PAV ' + m.eq; $('#lv-nm-adv').textContent = m.adv; $('#lv-advlbl').textContent = 'Buts de ' + m.adv;
   };
@@ -858,6 +880,10 @@ function initLive(pin, joueurs){
   pan.addEventListener('click', e => {
     const pk = e.target.closest('button[data-pick]');
     if (pk) { const i = etat.buts.findIndex(b => !b.n); if (i >= 0) { etat.buts[i].n = pk.dataset.pick; sync(); } return; }
+    const ca = e.target.closest('button[data-carte]');
+    if (ca) { const [eq, c] = ca.dataset.carte.split('|'); etat.cartons.push({ e: eq, c, n: '', m: '' }); sync(); return; }
+    const cdel = e.target.closest('button[data-cdel]');
+    if (cdel) { etat.cartons.splice(Number(cdel.dataset.cdel), 1); sync(); return; }
     const adel = e.target.closest('button[data-adel]');
     if (adel) { etat.butsAdv.splice(Number(adel.dataset.adel), 1); sync(); return; }
     const del = e.target.closest('button[data-del]');
@@ -870,9 +896,10 @@ function initLive(pin, joueurs){
     } else { if (d > 0) etat.butsAdv.push({ m: '' }); else etat.butsAdv.pop(); sync(); }
   });
   pan.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.ai != null) etat.butsAdv[Number(t.dataset.ai)].m = t.value; });
+  pan.addEventListener('input', e => { const t = e.target; if (t.dataset && t.dataset.ci != null) etat.cartons[Number(t.dataset.ci)][t.dataset.cf] = t.value.slice(0, 40); });
   pan.addEventListener('input', e => { const t = e.target; if (t.dataset && t.dataset.i != null) etat.buts[Number(t.dataset.i)][t.dataset.f] = t.value.slice(0, 40); });
   pan.addEventListener('change', e => { const t = e.target; if (t.dataset && t.dataset.f === 'n') majPick(); });
-  $('#lv-match').addEventListener('change', e => { etat = { key: e.target.value, buts: [], butsAdv: [], phase: 'Avant-match' }; sync(); });
+  $('#lv-match').addEventListener('change', e => { etat = { key: e.target.value, buts: [], butsAdv: [], cartons: [], phase: 'Avant-match' }; sync(); });
   $('#lv-phase').addEventListener('change', e => { etat.phase = e.target.value; });
   const msg = t => { $('#lv-msg').textContent = t; };
   const publier = async (live) => {
@@ -884,7 +911,7 @@ function initLive(pin, joueurs){
     } catch (err) { msg('Pas de connexion. Réessaie dans un instant.'); }
     $('#lv-pub').disabled = $('#lv-stop').disabled = false;
   };
-  $('#lv-pub').addEventListener('click', () => publier({ key: etat.key, pav: etat.buts.length, adv: etat.butsAdv.length, buts: etat.buts.map(b => ({ n: b.n.trim(), m: b.m.trim() })), butsAdv: etat.butsAdv.map(b => ({ m: b.m })), phase: etat.phase }));
+  $('#lv-pub').addEventListener('click', () => publier({ key: etat.key, pav: etat.buts.length, adv: etat.butsAdv.length, buts: etat.buts.map(b => ({ n: b.n.trim(), m: b.m.trim() })), butsAdv: etat.butsAdv.map(b => ({ m: b.m })), cartons: etat.cartons.map(c => ({ e: c.e, c: c.c, n: c.e === 'pav' ? c.n.trim() : '', m: c.m })), phase: etat.phase }));
   $('#lv-stop').addEventListener('click', () => publier({}));
 }
 </script>
