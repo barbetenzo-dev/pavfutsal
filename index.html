@@ -330,6 +330,7 @@ footer img{width:36px;height:36px;vertical-align:middle;margin-right:8px}
 .lv-pin{display:flex;gap:10px}
 .lv-pin input{flex:1;min-width:0;font:600 22px/1 var(--body);letter-spacing:.3em;text-align:center;padding:10px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--fg)}
 .prov{margin:8px 0 0;padding:8px 12px;border-radius:6px;background:#FFF4D6;color:#5C4300;font-size:14px;line-height:1.4}
+.live-panel .lv-x{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;border:0;background:transparent;color:var(--muted);font-size:22px;line-height:1;cursor:pointer}.live-panel .lv-x:hover{background:var(--bg);color:var(--fg)}
 footer .legal a{color:#B9B0AE;text-decoration:none}footer .legal a:hover{color:#fff;text-decoration:underline}
 footer .staff{color:#8A817F;font-size:13px;text-decoration:none}
 footer .staff:hover{color:#fff;text-decoration:underline}
@@ -909,16 +910,22 @@ function ouvrirDirect(){
   panneauOuvert = true;
   let pin = ''; try { pin = sessionStorage.getItem('pav-pin') || ''; } catch(e) {}
   const login = document.createElement('div'); login.className = 'live-panel'; login.setAttribute('role','dialog'); login.setAttribute('aria-label','Accès au score en direct');
-  login.innerHTML = `<h3>Score en direct</h3>
+  login.innerHTML = `<button type="button" class="lv-x" id="lv-x" aria-label="Fermer">✕</button><h3>Score en direct</h3>
     <form id="lv-login"><label for="lv-code">Code d'accès</label>
     <div class="lv-pin"><input id="lv-code" type="password" inputmode="numeric" autocomplete="off" maxlength="8" required><button class="btn main" type="submit">Entrer</button></div></form>
-    <p class="live-msg" id="lv-lmsg">Réservé aux dirigeants du club.</p>`;
+    <p class="live-msg" id="lv-lmsg">Réservé aux dirigeants du club.</p>
+    <button type="button" class="btn ghost" id="lv-fermer">Fermer</button>`;
   document.body.append(login);
+  const fermer = () => { login.remove(); panneauOuvert = false; document.removeEventListener('keydown', echap);
+    if (veutDirect()) { try { history.replaceState(null, '', location.pathname); } catch(e) {} } };
+  const echap = e => { if (e.key === 'Escape') fermer(); };
+  document.addEventListener('keydown', echap);
+  $('#lv-x').addEventListener('click', fermer); $('#lv-fermer').addEventListener('click', fermer);
   const essayer = async (code) => {
     $('#lv-lmsg').textContent = 'Vérification…';
     try {
       const j = await appel({ action: 'login', pin: code });
-      if (j.ok) { try { sessionStorage.setItem('pav-pin', code); } catch(e) {} login.remove(); LIVE = j.live || {}; renderLive(); initLive(code, j.joueurs || []); return; }
+      if (j.ok) { try { sessionStorage.setItem('pav-pin', code); } catch(e) {} login.remove(); document.removeEventListener('keydown', echap); LIVE = j.live || {}; renderLive(); initLive(code, j.joueurs || []); return; }
       try { sessionStorage.removeItem('pav-pin'); } catch(e) {}
       $('#lv-lmsg').textContent = j.error === 'locked' ? 'Trop d’essais. Réessaie dans 15 minutes.' : 'Code incorrect.';
     } catch (e) { $('#lv-lmsg').textContent = 'Connexion impossible. Vérifie ta connexion internet.'; }
@@ -926,12 +933,10 @@ function ouvrirDirect(){
   $('#lv-login').addEventListener('submit', e => { e.preventDefault(); essayer($('#lv-code').value.trim()); });
   if (pin) essayer(pin); else $('#lv-code').focus();
 }
-const veutDirect = () => location.hash === '#direct' || /[?&]direct\b/.test(location.search);
+function veutDirect(){ return location.hash === '#direct' || /[?&]direct\b/.test(location.search); }
 if (veutDirect()) ouvrirDirect();
 document.addEventListener('click', e => { const a = e.target.closest('a[href="#direct"]'); if (a) { e.preventDefault(); ouvrirDirect(); } });
-window.addEventListener('hashchange', () => { const veutDirect = () => location.hash === '#direct' || /[?&]direct\b/.test(location.search);
-if (veutDirect()) ouvrirDirect();
-document.addEventListener('click', e => { const a = e.target.closest('a[href="#direct"]'); if (a) { e.preventDefault(); ouvrirDirect(); } }); });
+window.addEventListener('hashchange', () => { if (veutDirect()) ouvrirDirect(); });
 
 function initLive(pin, joueurs){
   const choix = matchs.filter(m => (m.eq==='A'||m.eq==='B') && (!m.joue || m.auto) && !m.st && m.comp!=='Tournoi' && (endOf(m) >= new Date(now - 12*3600e3))).sort((a,b)=>a.dt-b.dt).slice(0,4);
