@@ -1,5 +1,5 @@
-/* Service worker PAV Futsal – version 52cb08c37f */
-const CACHE = 'pav-52cb08c37f';
+/* Service worker PAV Futsal – version 842cc7a63a */
+const CACHE = 'pav-842cc7a63a';
 const COEUR = ['/', '/index.html', '/manifest.webmanifest', '/assets/pav.png', '/icons/icon-192.png', '/icons/icon-512.png'];
 try {
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js', 'https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
