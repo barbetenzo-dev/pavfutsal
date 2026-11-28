@@ -336,19 +336,21 @@ footer .staff{color:#8A817F;font-size:13px;text-decoration:none}
 footer .staff:hover{color:#fff;text-decoration:underline}
 
 
-/* Appli installée : la page défile dans un cadre, la barre du bas ne bouge plus (corrige iOS) */
+/* Appli installée : la page défile dans un cadre, la barre du bas ne bouge plus.
+   iOS 26 : la zone des éléments "fixed" est parfois plus courte que l'écran -> on cale tout sur 100dvh, en absolu */
 html.app,html.app body{height:100%;overflow:hidden;overscroll-behavior:none}
-/* iOS : la racine ne doit jamais défiler (sinon bande vide en bas et haut de page coupé) ; un éventuel vide reste noir */
+html.app,html.app body{height:100dvh;max-height:100dvh}
 html.app{padding:0!important;background:#111}
-html.app #appscroll{background:var(--bg);padding-top:env(safe-area-inset-top,0px)}
-html.app body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#111;z-index:40}
-/* iOS 26 : l'écran utile est parfois plus court que l'écran réel au démarrage ; --gap (mesuré en JS) recolle la barre du bas */
-html.app .tabbar{bottom:calc(-1 * var(--gap,0px))}
-html.app body{padding-bottom:0!important}
+html.app body{position:relative;padding:0!important;margin:0;background:#111}
+html.app body::before{content:"";position:absolute;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#111;z-index:40}
 html.app nav.menu{display:none}
+html.app header.top{top:0}
 html.app header.top .wrap{flex-wrap:nowrap;padding-block:0}
-html.app #appscroll{position:fixed;top:0;left:0;right:0;bottom:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px)}
-@media (max-width:760px){ html.app #appscroll{bottom:calc(66px + env(safe-area-inset-bottom,0px) - var(--gap,0px))} }
+html.app #appscroll{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;bottom:0;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scroll-behavior:smooth;scroll-padding-top:72px}
+@media (max-width:760px){
+  html.app #appscroll{bottom:calc(66px + env(safe-area-inset-bottom,0px))}
+  html.app .tabbar{position:absolute;bottom:0}
+}
 /* ===== Appli (PWA) ===== */
 .app-actions{display:flex;gap:8px;margin-left:12px;order:3}
 nav.menu{order:2}
@@ -385,7 +387,7 @@ nav.menu{order:2}
 </style>
 </head>
 <body>
-<script>if(matchMedia("(display-mode: standalone)").matches||navigator.standalone===true)document.documentElement.classList.add("app");if(document.documentElement.classList.contains("app")){const f=()=>{if(window.scrollY||document.documentElement.scrollTop||document.body.scrollTop){window.scrollTo(0,0);document.body.scrollTop=0;}};addEventListener("scroll",f,{passive:true});addEventListener("hashchange",()=>setTimeout(f,60));addEventListener("pageshow",f);document.addEventListener("visibilitychange",()=>setTimeout(f,60));if(window.visualViewport)visualViewport.addEventListener("resize",()=>setTimeout(f,60));const g=()=>{const portrait=innerHeight>innerWidth,h=portrait?Math.max(screen.height,screen.width):Math.min(screen.height,screen.width),d=Math.round(h-innerHeight);document.documentElement.style.setProperty("--gap",(navigator.standalone===true&&d>10&&d<130)?d+"px":"0px");};g();addEventListener("resize",g);addEventListener("orientationchange",()=>setTimeout(g,300));addEventListener("pageshow",g);document.addEventListener("visibilitychange",()=>setTimeout(g,100));setTimeout(g,500);setTimeout(g,1500);}</script>
+<script>if(matchMedia("(display-mode: standalone)").matches||navigator.standalone===true)document.documentElement.classList.add("app");if(document.documentElement.classList.contains("app")){const f=()=>{if(window.scrollY||document.documentElement.scrollTop||document.body.scrollTop){window.scrollTo(0,0);document.body.scrollTop=0;}};addEventListener("scroll",f,{passive:true});addEventListener("hashchange",()=>setTimeout(f,60));addEventListener("pageshow",f);document.addEventListener("visibilitychange",()=>setTimeout(f,60));if(window.visualViewport)visualViewport.addEventListener("resize",()=>setTimeout(f,60));}</script>
 <div id="appscroll">
 <header class="top">
   <div class="wrap">
